@@ -67,3 +67,18 @@ Ao montar volumes EFS diretamente nos containers Docker via script de *Bootstrap
 ├── docker-compose.yml # Orquestração dos containers (WP + DB)
 └── scripts/
     └── user_data.sh  # Script de Bootstrapping (Instalação Docker + Mount EFS)
+
+    
+🗺 Roadmap de Evolução
+Este projeto é parte de um laboratório contínuo de modernização de infraestrutura.
+• [x] Fase 1: Persistência & Compute (Concluído)
+    ◦ Implementação de EFS e Docker.
+    ◦ Automação via Terraform e Shell Script.
+• [ ] Fase 2: Performance & Edge (Planejado)
+    ◦ Implementação de Amazon CloudFront na frente do ALB para cache de conteúdo estático.
+    ◦ Integração com AWS WAF para proteção contra ataques Web.
+• [ ] Fase 3: Banco de Dados Gerenciado (Planejado)
+    ◦ Migração do container MySQL local para Amazon RDS (Multi-AZ) para garantir HA na camada de dados.
+
+--------------------------------------------------------------------------------
+Autor: Rodolfo Martins | AWS Cloud Engineer

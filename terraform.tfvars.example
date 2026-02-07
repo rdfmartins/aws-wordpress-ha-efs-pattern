@@ -1,0 +1,15 @@
+# Copie para terraform.tfvars e preencha com os IDs da sua conta:
+# cp terraform.tfvars.example terraform.tfvars
+#
+# Para obter VPC e subnets da VPC padrão:
+#   aws ec2 describe-vpcs --query 'Vpcs[?IsDefault==`true`].VpcId' --output text
+#   aws ec2 describe-subnets --filters "Name=vpc-id,Values=<VPC_ID>" --query 'Subnets[*].SubnetId' --output text
+# (Use pelo menos 2 subnets em AZs diferentes para o ALB.)
+
+aws_region   = "us-east-1"
+vpc_id       = "vpc-xxxxxxxxx"
+public_subnets = ["subnet-aaaaaaaa", "subnet-bbbbbbbb"]
+subnet_id    = "subnet-aaaaaaaa"   # pode ser uma das public_subnets
+
+instance_type = "t3.micro"
+environment  = "dev"

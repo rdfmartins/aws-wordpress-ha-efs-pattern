@@ -1,20 +1,82 @@
-# 1. Security Groups (O "Castelo")
+# 1. Security Groups (Princípio do Menor Privilégio)
 resource "aws_security_group" "alb_sg" {
-  name = "alb-sg"
-  description = "Allow HTTP from world"
-  # Ingress porta 80 liberada para 0.0.0.0/0
+  name        = "wordpress-alb-sg"
+  description = "Allow HTTP from internet to ALB"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    description = "HTTP from world"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow all outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "wordpress-alb-sg" }
 }
 
 resource "aws_security_group" "ec2_sg" {
-  name = "wordpress-ec2-sg"
-  description = "Allow traffic from ALB only"
-  # Ingress porta 80 vindo APENAS do security_group do ALB (Segurança!)
-  # Ingress porta 2049 (NFS) vindo do próprio SG (para montar EFS)
+  name        = "wordpress-ec2-sg"
+  description = "Allow traffic from ALB only; NFS from self for EFS"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    description     = "HTTP from ALB only"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb_sg.id]
+  }
+
+  ingress {
+    description = "NFS from same SG (EFS mount)"
+    from_port   = 2049
+    to_port     = 2049
+    protocol    = "tcp"
+    self        = true
+  }
+
+  egress {
+    description = "Allow all outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "wordpress-ec2-sg" }
 }
 
 resource "aws_security_group" "efs_sg" {
-  name = "efs-sg"
-  # Ingress porta 2049 vindo do ec2_sg
+  name        = "wordpress-efs-sg"
+  description = "Allow NFS from EC2 instances only"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    description     = "NFS from EC2 SG"
+    from_port       = 2049
+    to_port         = 2049
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ec2_sg.id]
+  }
+
+  egress {
+    description = "Allow all outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "wordpress-efs-sg" }
 }
 
 # 2. O Elastic File System (O Coração da Persistência)

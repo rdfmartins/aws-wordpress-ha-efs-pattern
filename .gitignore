@@ -1,0 +1,23 @@
+# Valores reais das variáveis — NUNCA commitar
+terraform.tfvars
+*.auto.tfvars
+*.auto.tfvars.json
+
+# Estado remoto pode conter dados sensíveis
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.swo

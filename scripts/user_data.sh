@@ -1,55 +1,27 @@
 #!/bin/bash
-# Atualiza o sistema
+# Bootstrap: instala Docker, monta EFS e sobe WordPress via docker-compose.
+# O conteúdo do docker-compose é injetado pelo Terraform (arquivo do repositório).
+
+set -e
 yum update -y
-yum install -y docker amazon-efs-utils git
+yum install -y docker amazon-efs-utils
 
-# Inicia o Docker
-service docker start
+systemctl start docker
+systemctl enable docker
 usermod -a -G docker ec2-user
-chkconfig docker on
 
-# Instala Docker Compose
-curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+# Docker Compose (binário standalone)
+curl -sSL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 
-# --- A MÁGICA do EFS ---
-# Cria o diretório local
+# Monta o EFS (ID injetado pelo Terraform)
 mkdir -p /mnt/efs
-
-# Monta o EFS usando o ID injetado pelo Terraform
-# (Isso garante que, se a EC2 morrer, a nova monta o mesmo disco)
 mount -t efs ${efs_id}:/ /mnt/efs
+mkdir -p /mnt/efs/wp-content /mnt/efs/mysql-data
 
-# Garante que as pastas do WP existam no EFS
-mkdir -p /mnt/efs/wp-content
-mkdir -p /mnt/efs/mysql-data # (Opcional se usar DB em container)
+# Escreve docker-compose.yml (conteúdo do repositório, injetado em base64 pelo Terraform)
+echo "${docker_compose_content_base64}" | base64 -d > /home/ec2-user/docker-compose.yml
+chown ec2-user:ec2-user /home/ec2-user/docker-compose.yml
 
-# Baixa o Docker Compose do seu Repo (ou cria inline)
-cat <<EOF > /home/ec2-user/docker-compose.yml
-version: '3'
-services:
-  db:
-    image: mysql:5.7
-    volumes:
-      - /mnt/efs/mysql-data:/var/lib/mysql # Persistência do DB no EFS
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: wordpress
-      
-  wordpress:
-    depends_on:
-      - db
-    image: wordpress:latest
-    ports:
-      - "80:80"
-    environment:
-      WORDPRESS_DB_HOST: db:3306
-      WORDPRESS_DB_USER: root
-      WORDPRESS_DB_PASSWORD: password
-    volumes:
-      - /mnt/efs/wp-content:/var/www/html/wp-content # AQUI ESTÁ A CONSISTÊNCIA [3]
-EOF
-
-# Sobe a aplicação
 cd /home/ec2-user
 /usr/local/bin/docker-compose up -d

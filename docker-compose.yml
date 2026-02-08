@@ -1,0 +1,28 @@
+# WordPress + MySQL — usado pelas instâncias EC2/ASG
+# Requer EFS montado em /mnt/efs (wp-content e mysql-data).
+# O script scripts/user_data.sh monta o EFS e executa este compose.
+
+version: "3"
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - /mnt/efs/mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: wordpress
+    restart: unless-stopped
+
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress:latest
+    ports:
+      - "80:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: password
+    volumes:
+      - /mnt/efs/wp-content:/var/www/html/wp-content
+    restart: unless-stopped

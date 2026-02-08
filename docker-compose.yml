@@ -9,7 +9,7 @@ services:
     volumes:
       - /mnt/efs/mysql-data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-changeme123}
       MYSQL_DATABASE: wordpress
     restart: unless-stopped
 
@@ -22,7 +22,7 @@ services:
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_USER: root
-      WORDPRESS_DB_PASSWORD: password
+      WORDPRESS_DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-changeme123}
     volumes:
       - /mnt/efs/wp-content:/var/www/html/wp-content
     restart: unless-stopped

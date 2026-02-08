@@ -3,8 +3,8 @@
 # O conteúdo do docker-compose é injetado pelo Terraform (arquivo do repositório).
 
 set -e
-yum update -y
-yum install -y docker amazon-efs-utils
+dnf update -y
+dnf install -y docker amazon-efs-utils
 
 systemctl start docker
 systemctl enable docker
@@ -18,6 +18,9 @@ chmod +x /usr/local/bin/docker-compose
 mkdir -p /mnt/efs
 mount -t efs ${efs_id}:/ /mnt/efs
 mkdir -p /mnt/efs/wp-content /mnt/efs/mysql-data
+
+# Define senha do MySQL (use AWS Secrets Manager em produção)
+export MYSQL_ROOT_PASSWORD="${db_password}"
 
 # Escreve docker-compose.yml (conteúdo do repositório, injetado em base64 pelo Terraform)
 echo "${docker_compose_content_base64}" | base64 -d > /home/ec2-user/docker-compose.yml

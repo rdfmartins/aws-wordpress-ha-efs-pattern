@@ -15,6 +15,12 @@ override.tf.json
 *_override.tf
 *_override.tf.json
 
+# Secrets e credenciais
+.env
+*.pem
+*.key
+secrets/
+
 # IDE / OS
 .idea/
 .vscode/

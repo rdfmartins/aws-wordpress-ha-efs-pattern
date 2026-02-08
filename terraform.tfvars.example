@@ -1,20 +1,19 @@
-# Copie para terraform.tfvars e preencha com os IDs da sua conta:
-# cp terraform.tfvars.example terraform.tfvars
-#
-# Para obter VPC e subnets da VPC padrão:
-#   aws ec2 describe-vpcs --query 'Vpcs[?IsDefault==`true`].VpcId' --output text
-#   aws ec2 describe-subnets --filters "Name=vpc-id,Values=<VPC_ID>" --query 'Subnets[*].SubnetId' --output text
-# (Use pelo menos 2 subnets em AZs diferentes para o ALB.)
+# IMPORTANTE: Nunca commite este arquivo no Git!
+# Copie de terraform.tfvars.example e preencha com seus valores reais.
 
-aws_region     = "us-east-1"
-vpc_id         = "vpc-xxxxxxxxx"
-public_subnets = ["subnet-aaaaaaaa", "subnet-bbbbbbbb"]
+# IDs da sua infraestrutura AWS (obtenha com: aws ec2 describe-vpcs / describe-subnets)
+vpc_id         = "vpc-xxxxxxxxxxxxxxxxx"
+public_subnets = ["subnet-xxxxxxxxxxxxxxxxx", "subnet-yyyyyyyyyyyyyyyyy"]
 
-instance_type = "t3.micro"
-
-# ASG (Parte 3): min/max/desired de instâncias
+# Configuração das instâncias
+instance_type        = "t3.micro"
 asg_min_size         = 1
 asg_max_size         = 2
 asg_desired_capacity = 1
 
+# Senha do banco MySQL (MUDE ESTA SENHA!)
+# Em produção, use AWS Secrets Manager
+db_password = "SuaSenhaSeguraAqui123!"
+
+# Ambiente
 environment = "dev"

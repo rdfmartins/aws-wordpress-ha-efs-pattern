@@ -48,3 +48,10 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
+
+variable "db_password" {
+  description = "Senha do banco MySQL (use AWS Secrets Manager em produção)"
+  type        = string
+  sensitive   = true
+  default     = "changeme123"
+}

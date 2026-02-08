@@ -122,6 +122,7 @@ resource "aws_lb_target_group" "wordpress" {
     unhealthy_threshold = 3
     interval            = 30
     timeout             = 5
+    matcher             = "200,302" # WordPress redireciona para /wp-admin/install.php
   }
 
   tags = { Name = "wordpress-tg" }
@@ -145,14 +146,15 @@ resource "aws_lb_listener" "http" {
 # -----------------------------------------------------------------------------
 resource "aws_launch_template" "wordpress" {
   name_prefix   = "wordpress-"
-  image_id      = "ami-0c7217cdde317cfec" # Amazon Linux 2023 (us-east-1)
+  image_id      = "ami-0532be01f26a3de55" # Amazon Linux 2023 (us-east-1)
   instance_type = var.instance_type
 
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
 
   user_data = base64encode(templatefile("${path.module}/scripts/user_data.sh", {
-    efs_id                      = aws_efs_file_system.wordpress_efs.id
+    efs_id                        = aws_efs_file_system.wordpress_efs.id
     docker_compose_content_base64 = base64encode(file("${path.module}/docker-compose.yml"))
+    db_password                   = var.db_password
   }))
 
   tag_specifications {
